@@ -10,91 +10,94 @@
 // As a user, I want to be able to clear all operations and start from 0.
 
 
-
-/*-------------------------------- Constants --------------------------------*/
-const calcNumbers = [0,1,2,3,4,5,6,7,8,9];
-const calcOperators = ['-', '+', '/'];
-
-
 /*-------------------------------- Variables --------------------------------*/
-let firstNumb; // clickedNumb is join()'ed and stored here
-let secondNumb;
-let signOfOperator; //operationBttn is joined and stored here
-let operationBttn = []
-let equalSign;
-let clickednumb = []
-let secondclickedNumb = []
+let firstNumb = []; // clickedNumb is join()'ed and stored here
+let secondNumb = [];
+let operation;
 let maxDigits = 6;
+let isSecondNumb = false; // flag to determine if we are inputting the 2nd number
+
 /*------------------------ Cached Element References ------------------------*/
-const display = document.querySelector('.display')
-
-
-
+const display = document.querySelector('.display');
 
 /*-------------------------------- Functions --------------------------------*/
 
-const userNumbInput = (event ) => {
+const userNumbInput = (event) => {
     if (event.target.classList.contains('number')) {
-        display.textContent = 'number'
-      
-        console.log(clickednumb)
-
+        if (isSecondNumb === false) {
+            firstNumb.push(event.target.innerText);
+            display.textContent = firstNumb.join('');
+        } else {
+            secondNumb.push(event.target.innerText);
+            display.textContent = `${firstNumb.join('')} ${operation} ${secondNumb.join('')}`;
+        }
     }
-}
+};
 
+const operatorInput = (event) => {
+    if (event.target.classList.contains('operator')) {
+        if (!isSecondNumb && firstNumb.length > 0) {
+            operation = event.target.innerText;
+            isSecondNumb = true; // Switch to inputting second number
+            display.textContent = `${firstNumb.join('')} ${operation}`;
+        }
+    }
+};
 
+const calculate = () => {
+    if (firstNumb.length > 0 && secondNumb.length > 0 && operation) {
+        let num1 = parseFloat(firstNumb.join(''));
+        let num2 = parseFloat(secondNumb.join(''));
+        let result;
+
+        switch (operation) {
+            case '+':
+                result = num1 + num2;
+                break;
+            case '-':
+                result = num1 - num2;
+                break;
+            case '*':
+                result = num1 * num2;
+                break;
+            case '/':
+                result = num2 !== 0 ? num1 / num2 : 'Cannot divide by zero';
+                break;
+            default:
+                result = 'Invalid operation';
+                break;
+        }
+
+        display.textContent = result;
+        firstNumb = [result.toString()];
+        secondNumb = [];
+        operation = null;
+        isSecondNumb = false;
+    }
+};
+
+const clearDisplay = () => {
+    firstNumb = [];
+    secondNumb = [];
+    operation = null;
+    isSecondNumb = false;
+    display.textContent = '0';
+};
 
 /*----------------------------- Event Listeners -----------------------------*/
 const calculator = document.querySelector('#calculator');
+
 calculator.addEventListener('click', (event) => {
-    
-    // console.log(clickednumb)
-    // console.log(event.target.classList)
-    // console.log(event.target.classList[0])
-    if (event.target.classList[1] === 'number') {
-        clickednumb.push(event.target.innerText) 
-        firstNumb = clickednumb.join('')
-        if(clickednumb.length < 11 ){
-            console.log(firstNumb)
-            display.innerText = firstNumb
-        } 
-      
-    } else if (event.target.classList[1] === 'operator' ){
-        operationBttn.push(event.target.innerText) 
-        // limit amount to one operator 
-        if (operationBttn.length === 1){
-         display.innerText = `${firstNumb} ${operationBttn}`
-         console.log(firstNumb,'operator', operationBttn)
-
-    }  
-     } 
-     //else if (event.target.classList[1] === 'number' ){
-    //     secondclickedNumb.push(event.target.innerText)
-    //     secondNumb = secondclickedNumb.join('')
-    //     if (secondclickedNumb.length < 11){
-    //         console.log(secondclickedNumb)
-    //         display.innerText =secondNumb
-    //     }
-    //  }
-  //============ How would i add a second number =============
-})
-
-
-// switch (operator) {
-//   case '+':
-//     x += y;
-//     break;
-//   case '-':
-//     x -= y;
-//     break;
-  // Add more cases for other operators as needed
-//   default:
-//     console.error('Invalid operator');
-// }
-
-// console.log(x); // Output: 15
-
-
-
-
-
+    if (event.target.classList.contains('number')) {
+        userNumbInput(event);
+    }
+    if (event.target.classList.contains('operator')) {
+        operatorInput(event);
+    }
+    if (event.target.classList.contains('equals')) {
+        calculate();
+    }
+    if (event.target.innerText === 'C') {
+        clearDisplay();
+    }
+});
